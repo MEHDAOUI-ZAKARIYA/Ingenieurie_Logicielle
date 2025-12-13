@@ -2,5 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Inversion_Controle_Avec_Spring_ApplicationsContext_xml/ENSA_Iversion_Controle_V2" vcs="Git" />
   </component>
 </project>
