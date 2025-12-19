@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Patients - 3D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            perspective: 1500px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h3 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: slideDown 1s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) rotateX(-90deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        .table-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+        }
+
+        .table-wrapper:hover {
+            transform: translateY(-5px) rotateX(2deg);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 15px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: relative;
+        }
+
+        thead::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        thead th {
+            padding: 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        thead th::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        thead th:hover::before {
+            left: 100%;
+        }
+
+        tbody tr {
+            background: white;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            animation: slideIn 0.5s ease-out backwards;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px) rotateY(-15deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotateY(0);
+            }
+        }
+
+        tbody tr:nth-child(1) { animation-delay: 0.1s; }
+        tbody tr:nth-child(2) { animation-delay: 0.2s; }
+        tbody tr:nth-child(3) { animation-delay: 0.3s; }
+        tbody tr:nth-child(4) { animation-delay: 0.4s; }
+        tbody tr:nth-child(5) { animation-delay: 0.5s; }
+        tbody tr:nth-child(n+6) { animation-delay: 0.6s; }
+
+        tbody tr:hover {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            transform: translateX(10px) scale(1.02) rotateY(2deg);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 1em;
+            color: #495057;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        td::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        tr:hover td::after {
+            width: 80%;
+        }
+
+        /* Badge pour le statut "Malade" */
+        td:nth-child(4) {
+            font-weight: 600;
+        }
+
+        /* Animation du score */
+        td:nth-child(5) {
+            font-weight: bold;
+            color: #667eea;
+            position: relative;
+        }
+
+        tr:hover td:nth-child(5) {
+            transform: scale(1.2);
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Badge pour ID */
+        td:first-child {
+            font-weight: 600;
+            color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 8px 0 0 8px;
+        }
+
+        /* Effet 3D sur le scroll */
+        @media (max-width: 768px) {
+            .table-wrapper {
+                padding: 15px;
+                overflow-x: auto;
+            }
+
+            h3 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            td, thead th {
+                padding: 12px 8px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* Effet de particules en arrière-plan */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* Badges stylisés */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            list-style: none;
+            padding-left: 0;
+            margin-top: 25px;
+        }
+
+        .pagination .page-item {
+            margin: 0 4px;
+        }
+
+        .pagination .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: #f2f2f2;
+            color: #6f42c1;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: #6f42c1;
+            color: white;
+            box-shadow: 0 6px 15px rgba(111, 66, 193, 0.4);
+            transform: scale(1.1);
+        }
+
+        .pagination .page-link:hover {
+            background: #d6c7ff;
+            transform: translateY(-2px);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+
+
+        .badge-oui {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+        }
+
+        .badge-non {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+        }
+
+        /* Score avec effet de progression */
+        .score {
+            display: inline-block;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .search-form label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            padding: 12px 16px;
+            font-size: 1em;
+            border-radius: 10px;
+            min-width: 260px;
+            background: #f3f3f3;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            background: white;
+            box-shadow: inset 0 0 0 2px #6f42c1;
+        }
+
+        .search-box button {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-box button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.5);
+        }
+
+        .search-box button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete::before {
+            content: "🗑";
+            margin-right: 6px;
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 75, 43, 0.6);
+        }
+
+        .btn-delete:active {
+            transform: scale(0.95);
+        }
+
+        .btn-delete:focus {
+            outline: none;
+        }
+
+        /* Alignement */
+        .text-center {
+            text-align: center;
+        }
+
+
+        tr:hover .score {
+            transform: rotateY(360deg) scale(1.1);
+        }
+    </style>
+</head>
+<body>
+<!-- Particules d'arrière-plan -->
+<div class="particles" id="particles"></div>
+
+<div class="container">
+    <h3>📋 Liste des Patients</h3>
+
+    <div class="table-wrapper">
+        <form method="get" th:action="@{/index}" class="search-form">
+            <label for="keyword">🔍 Key Words</label>
+            <div class="search-box">
+                <input type="text"
+                       id="keyword"
+                       name="keyword"
+                       placeholder="Rechercher un patient..."
+                       th:value="${keyword}">
+                <button type="submit">Chercher</button>
+            </div>
+        </form>
+
+        <table>
+            <thead>
+            <tr>
+                <th>🆔 ID</th>
+                <th>👤 Nom</th>
+                <th>📅 Date de Naissance</th>
+                <th>🏥 Statut</th>
+                <th>📊 Score</th>
+                <th class="text-center">
+                    🗑 Action
+                </th>
+
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Thymeleaf loop - garde ta syntaxe originale -->
+            <tr th:each="p:${ListePatients}">
+                <td th:text="${p.id}">1</td>
+                <td th:text="${p.nom}">Dupont</td>
+                <td th:text="${p.dateNaissance}">1990-01-15</td>
+                <td>
+                    <span th:if="${p.malade}" class="badge badge-oui">Malade</span>
+                    <span th:unless="${p.malade}" class="badge badge-non">Sain</span>
+                </td>
+                <td>
+                    <span class="score" th:text="${p.score}">85</span>
+                </td>
+                <td class="text-center">
+                    <a class="btn-delete"
+                       th:href="@{/delete(id=${p.id} , keyword = ${keyword} , page =${currentPage})}"
+                       onclick="return confirm('⚠️ Voulez-vous vraiment supprimer ce patient ?');">
+                        Supprimer
+                    </a>
+                </td>
+
+            </tr>
+
+
+
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+
+                <!-- Précédent -->
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/index(page=${currentPage - 1})}">◀</a>
+                </li>
+
+                <!-- Pages (3 max) -->
+                <li class="page-item"
+                    th:each="p : ${pages}"
+                    th:classappend="${p == currentPage} ? 'active'">
+
+                    <a class="page-link"
+                       th:text="${p + 1}"
+                       th:href="@{/index(page=${p},keyword=${keyword})}">
+                    </a>
+                </li>
+
+                <!-- Suivant -->
+                <li class="page-item"
+                    th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/index(page=${currentPage + 1})}">▶</a>
+                </li>
+
+            </ul>
+        </nav>
+
+
+
+    </div>
+</div>
+
+<script>
+    // Générer des particules animées
+    const particlesContainer = document.getElementById('particles');
+
+    function createParticle() {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+
+        const size = Math.random() * 5 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.bottom = '-10px';
+        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+
+        particlesContainer.appendChild(particle);
+
+        setTimeout(() => {
+            particle.remove();
+        }, 20000);
+    }
+
+    // Créer des particules périodiquement
+    setInterval(createParticle, 300);
+
+    // Créer les premières particules
+    for (let i = 0; i < 20; i++) {
+        createParticle();
+    }
+
+    // Effet 3D au mouvement de la souris
+    const tableWrapper = document.querySelector('.table-wrapper');
+
+    document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 20;
+        const y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+        tableWrapper.style.transform = `
+                translateY(-5px)
+                rotateX(${-y * 0.5}deg)
+                rotateY(${x * 0.5}deg)
+            `;
+    });
+
+    // Animation au scroll
+    const rows = document.querySelectorAll('tbody tr');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'slideIn 0.6s ease-out';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    rows.forEach(row => observer.observe(row));
+</script>
+</body>
+</html>
