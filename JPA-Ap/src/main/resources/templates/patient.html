@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{template1}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liste des Patients - 3D</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.8/css/bootstrap.min.css">
+
     <style>
         * {
             margin: 0;
@@ -187,12 +190,10 @@
             width: 80%;
         }
 
-        /* Badge pour le statut "Malade" */
         td:nth-child(4) {
             font-weight: 600;
         }
 
-        /* Animation du score */
         td:nth-child(5) {
             font-weight: bold;
             color: #667eea;
@@ -204,7 +205,6 @@
             text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
         }
 
-        /* Badge pour ID */
         td:first-child {
             font-weight: 600;
             color: #764ba2;
@@ -212,25 +212,6 @@
             border-radius: 8px 0 0 8px;
         }
 
-        /* Effet 3D sur le scroll */
-        @media (max-width: 768px) {
-            .table-wrapper {
-                padding: 15px;
-                overflow-x: auto;
-            }
-
-            h3 {
-                font-size: 1.8em;
-                margin-bottom: 20px;
-            }
-
-            td, thead th {
-                padding: 12px 8px;
-                font-size: 0.9em;
-            }
-        }
-
-        /* Effet de particules en arrière-plan */
         .particles {
             position: fixed;
             top: 0;
@@ -265,7 +246,6 @@
             }
         }
 
-        /* Badges stylisés */
         .badge {
             display: inline-block;
             padding: 4px 12px;
@@ -273,6 +253,33 @@
             font-size: 0.85em;
             font-weight: 600;
             text-transform: uppercase;
+        }
+
+        .badge-oui {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+        }
+
+        .badge-non {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+        }
+
+        .score {
+            display: inline-block;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        tr:hover .score {
+            transform: rotateY(360deg) scale(1.1);
         }
 
         .pagination {
@@ -317,32 +324,6 @@
         .pagination .page-item.disabled .page-link {
             opacity: 0.4;
             pointer-events: none;
-        }
-
-
-
-        .badge-oui {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
-        }
-
-        .badge-non {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
-        }
-
-        /* Score avec effet de progression */
-        .score {
-            display: inline-block;
-            padding: 6px 14px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 8px;
-            font-weight: bold;
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
         }
 
         .search-form {
@@ -442,174 +423,222 @@
             transform: scale(0.95);
         }
 
-        .btn-delete:focus {
+        .btn-modifier {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-modifier::before {
+            content: "✏️";
+            margin-right: 6px;
+        }
+
+        .btn-modifier:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.6);
+        }
+
+        .btn-modifier:active {
+            transform: scale(0.95);
+        }
+
+        .btn-modifier:focus {
             outline: none;
         }
 
-        /* Alignement */
+
         .text-center {
             text-align: center;
         }
 
+        @media (max-width: 768px) {
+            .table-wrapper {
+                padding: 15px;
+                overflow-x: auto;
+            }
 
-        tr:hover .score {
-            transform: rotateY(360deg) scale(1.1);
+            h3 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            td, thead th {
+                padding: 12px 8px;
+                font-size: 0.9em;
+            }
+
+            .pagination .page-link {
+                min-width: 36px;
+                height: 36px;
+                font-size: 0.9em;
+            }
         }
     </style>
 </head>
 <body>
-<!-- Particules d'arrière-plan -->
-<div class="particles" id="particles"></div>
+<!-- Ce contenu sera injecté dans le fragment "content1" du template1 -->
+<div layout:fragment="content1">
+    <!-- Particules d'arrière-plan -->
+    <div class="particles" id="particles"></div>
 
-<div class="container">
-    <h3>📋 Liste des Patients</h3>
+    <div class="container">
+        <h3>📋 Liste des Patients</h3>
 
-    <div class="table-wrapper">
-        <form method="get" th:action="@{/index}" class="search-form">
-            <label for="keyword">🔍 Key Words</label>
-            <div class="search-box">
-                <input type="text"
-                       id="keyword"
-                       name="keyword"
-                       placeholder="Rechercher un patient..."
-                       th:value="${keyword}">
-                <button type="submit">Chercher</button>
-            </div>
-        </form>
+        <div class="table-wrapper">
+            <!-- Formulaire de recherche -->
+            <form method="get" th:action="@{/index}" class="search-form">
+                <label for="keyword">🔍 Key Words</label>
+                <div class="search-box">
+                    <input type="text"
+                           id="keyword"
+                           name="keyword"
+                           placeholder="Rechercher un patient..."
+                           th:value="${keyword}">
+                    <button type="submit">Chercher</button>
+                </div>
+            </form>
 
-        <table>
-            <thead>
-            <tr>
-                <th>🆔 ID</th>
-                <th>👤 Nom</th>
-                <th>📅 Date de Naissance</th>
-                <th>🏥 Statut</th>
-                <th>📊 Score</th>
-                <th class="text-center">
-                    🗑 Action
-                </th>
+            <!-- Table des patients -->
+            <table>
+                <thead>
+                <tr>
+                    <th>🆔 ID</th>
+                    <th>👤 Nom</th>
+                    <th>📅 Date de Naissance</th>
+                    <th>🏥 Statut</th>
+                    <th>📊 Score</th>
+                    <th class="text-center">🗑 Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${ListePatients}">
+                    <td th:text="${p.id}">1</td>
+                    <td th:text="${p.nom}">Dupont</td>
+                    <td th:text="${p.dateNaissance}">1990-01-15</td>
+                    <td>
+                        <span th:if="${p.malade}" class="badge badge-oui">Malade</span>
+                        <span th:unless="${p.malade}" class="badge badge-non">Sain</span>
+                    </td>
+                    <td>
+                        <span class="score" th:text="${p.score}">85</span>
+                    </td>
+                    <td class="text-center">
+                        <a class="btn-delete"
+                           th:href="@{/delete(id=${p.id}, keyword=${keyword}, page=${currentPage})}"
+                           onclick="return confirm('⚠️ Voulez-vous vraiment supprimer ce patient ?');">
+                            Supprimer
+                        </a>
+                    </td>
+                    <td class="text-center">
+                        <a class="btn-modifier"
+                           th:href="@{/editPatient(id=${p.id}, keyword=${keyword}, page=${currentPage})}">
+                            Modifier
+                        </a>
+                    </td>
 
-            </tr>
-            </thead>
-            <tbody>
-            <!-- Thymeleaf loop - garde ta syntaxe originale -->
-            <tr th:each="p:${ListePatients}">
-                <td th:text="${p.id}">1</td>
-                <td th:text="${p.nom}">Dupont</td>
-                <td th:text="${p.dateNaissance}">1990-01-15</td>
-                <td>
-                    <span th:if="${p.malade}" class="badge badge-oui">Malade</span>
-                    <span th:unless="${p.malade}" class="badge badge-non">Sain</span>
-                </td>
-                <td>
-                    <span class="score" th:text="${p.score}">85</span>
-                </td>
-                <td class="text-center">
-                    <a class="btn-delete"
-                       th:href="@{/delete(id=${p.id} , keyword = ${keyword} , page =${currentPage})}"
-                       onclick="return confirm('⚠️ Voulez-vous vraiment supprimer ce patient ?');">
-                        Supprimer
-                    </a>
-                </td>
+                </tr>
+                </tbody>
+            </table>
 
-            </tr>
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <!-- Bouton Précédent -->
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/index(page=${currentPage - 1}, keyword=${keyword})}">◀</a>
+                    </li>
 
+                    <!-- Pages (3 max autour de la page courante) -->
+                    <li class="page-item"
+                        th:each="p : ${pages}"
+                        th:classappend="${p == currentPage} ? 'active'">
+                        <a class="page-link"
+                           th:text="${p + 1}"
+                           th:href="@{/index(page=${p}, keyword=${keyword})}">
+                        </a>
+                    </li>
 
-
-            </tbody>
-        </table>
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-
-                <!-- Précédent -->
-                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                    <a class="page-link"
-                       th:href="@{/index(page=${currentPage - 1})}">◀</a>
-                </li>
-
-                <!-- Pages (3 max) -->
-                <li class="page-item"
-                    th:each="p : ${pages}"
-                    th:classappend="${p == currentPage} ? 'active'">
-
-                    <a class="page-link"
-                       th:text="${p + 1}"
-                       th:href="@{/index(page=${p},keyword=${keyword})}">
-                    </a>
-                </li>
-
-                <!-- Suivant -->
-                <li class="page-item"
-                    th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                    <a class="page-link"
-                       th:href="@{/index(page=${currentPage + 1})}">▶</a>
-                </li>
-
-            </ul>
-        </nav>
-
-
-
+                    <!-- Bouton Suivant -->
+                    <li class="page-item"
+                        th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/index(page=${currentPage + 1}, keyword=${keyword})}">▶</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
-</div>
 
-<script>
-    // Générer des particules animées
-    const particlesContainer = document.getElementById('particles');
+    <!-- Script pour les particules et animations -->
+    <script>
+        // Générer des particules animées
+        const particlesContainer = document.getElementById('particles');
 
-    function createParticle() {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
 
-        const size = Math.random() * 5 + 2;
-        particle.style.width = size + 'px';
-        particle.style.height = size + 'px';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.bottom = '-10px';
-        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-        particle.style.animationDelay = Math.random() * 5 + 's';
+            const size = Math.random() * 5 + 2;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.bottom = '-10px';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
 
-        particlesContainer.appendChild(particle);
+            particlesContainer.appendChild(particle);
 
-        setTimeout(() => {
-            particle.remove();
-        }, 20000);
-    }
+            setTimeout(() => {
+                particle.remove();
+            }, 20000);
+        }
 
-    // Créer des particules périodiquement
-    setInterval(createParticle, 300);
+        // Créer des particules périodiquement
+        setInterval(createParticle, 300);
 
-    // Créer les premières particules
-    for (let i = 0; i < 20; i++) {
-        createParticle();
-    }
+        // Créer les premières particules
+        for (let i = 0; i < 20; i++) {
+            createParticle();
+        }
 
-    // Effet 3D au mouvement de la souris
-    const tableWrapper = document.querySelector('.table-wrapper');
+        // Effet 3D au mouvement de la souris
+        const tableWrapper = document.querySelector('.table-wrapper');
 
-    document.addEventListener('mousemove', (e) => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 20;
-        const y = (e.clientY / window.innerHeight - 0.5) * 20;
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
 
-        tableWrapper.style.transform = `
+            tableWrapper.style.transform = `
                 translateY(-5px)
                 rotateX(${-y * 0.5}deg)
                 rotateY(${x * 0.5}deg)
             `;
-    });
-
-    // Animation au scroll
-    const rows = document.querySelectorAll('tbody tr');
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.animation = 'slideIn 0.6s ease-out';
-            }
         });
-    }, { threshold: 0.1 });
 
-    rows.forEach(row => observer.observe(row));
-</script>
+        // Animation au scroll
+        const rows = document.querySelectorAll('tbody tr');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'slideIn 0.6s ease-out';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        rows.forEach(row => observer.observe(row));
+    </script>
+</div>
 </body>
 </html>

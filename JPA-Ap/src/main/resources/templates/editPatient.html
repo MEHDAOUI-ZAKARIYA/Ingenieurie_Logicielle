@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{template1}">
+<head>
+  <meta charset="UTF-8">
+  <title>Modifier Patient</title>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .form-container {
+      max-width: 700px;
+      margin: 0 auto;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .form-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-title {
+      text-align: center;
+      color: #764ba2;
+      font-size: 2em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .form-subtitle {
+      text-align: center;
+      color: #6c757d;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .patient-id-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-control, .form-select {
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .form-control:hover, .form-select:hover {
+      border-color: #764ba2;
+    }
+
+    /* Styles pour les cases à cocher/radio */
+    .form-check-input {
+      width: 1.5em;
+      height: 1.5em;
+      border: 2px solid #667eea;
+      cursor: pointer;
+    }
+
+    .form-check-input:checked {
+      background-color: #667eea;
+      border-color: #667eea;
+    }
+
+    .form-check-label {
+      font-weight: 500;
+      color: #495057;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    /* Boutons stylisés */
+    .btn-update {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 40px;
+      font-size: 1.1em;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+      margin-top: 20px;
+    }
+
+    .btn-update:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 25px rgba(79, 172, 254, 0.6);
+    }
+
+    .btn-update:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 40px;
+      font-size: 1.1em;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-cancel:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 25px rgba(255, 65, 108, 0.6);
+      color: white;
+    }
+
+    .btn-group-custom {
+      display: flex;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    /* Messages d'erreur */
+    .error-message {
+      color: #dc3545;
+      font-size: 0.875em;
+      margin-top: 5px;
+      display: block;
+    }
+
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+
+    /* Animation de chargement */
+    .btn-update:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Particules d'arrière-plan */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      animation: float 15s infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(100px) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    /* Icônes dans les labels */
+    .label-icon {
+      font-size: 1.2em;
+    }
+
+    /* Range slider pour le score */
+    .form-range {
+      height: 8px;
+      border-radius: 10px;
+    }
+
+    .form-range::-webkit-slider-thumb {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .score-display {
+      text-align: center;
+      font-size: 2em;
+      font-weight: 700;
+      color: #4facfe;
+      margin: 10px 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Alert info */
+    .alert-info-custom {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
+      border: 2px solid #4facfe;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 25px;
+      color: #0c5460;
+      font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-card {
+        padding: 25px;
+      }
+
+      .form-title {
+        font-size: 1.6em;
+      }
+
+      .btn-group-custom {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- Ce contenu sera injecté dans le fragment "content1" du template1 -->
+<div layout:fragment="content1">
+  <!-- Particules d'arrière-plan -->
+  <div class="particles" id="particles"></div>
+
+  <div class="form-container">
+    <div class="form-card">
+      <h2 class="form-title">✏️ Modifier le Patient</h2>
+      <p class="form-subtitle">Mettez à jour les informations du patient</p>
+
+      <!-- Badge avec l'ID du patient -->
+      <div class="text-center">
+        <span class="patient-id-badge">
+          🆔 Patient ID: <span th:text="${patient.id}">123</span>
+        </span>
+      </div>
+
+      <!-- Alerte d'information -->
+      <div class="alert-info-custom">
+        ℹ️ Vous êtes en train de modifier les informations d'un patient existant.
+      </div>
+
+      <form method="post" th:action="@{/save(page=${page}, keyword=${keyword})}" th:object="${patient}">
+
+        <!-- Champ caché pour l'ID -->
+        <input type="hidden" th:field="*{id}">
+
+        <!-- Nom du patient -->
+        <div class="mb-4">
+          <label for="nom" class="form-label">
+            <span class="label-icon">👤</span> Nom du patient
+          </label>
+          <input type="text"
+                 class="form-control"
+                 id="nom"
+                 th:field="*{nom}"
+                 placeholder="Ex: Dupont Jean"
+                 required>
+          <span class="error-message" th:errors="*{nom}"></span>
+        </div>
+
+        <!-- Date de naissance -->
+        <div class="mb-4">
+          <label for="dateNaissance" class="form-label">
+            <span class="label-icon">📅</span> Date de Naissance
+          </label>
+          <input type="date"
+                 class="form-control"
+                 id="dateNaissance"
+                 th:field="*{dateNaissance}"
+                 required>
+          <span class="error-message" th:errors="*{dateNaissance}"></span>
+        </div>
+
+        <!-- Statut (Malade ou Sain) -->
+        <div class="mb-4">
+          <label class="form-label">
+            <span class="label-icon">🏥</span> Statut du patient
+          </label>
+          <div class="d-flex gap-4">
+            <div class="form-check">
+              <input class="form-check-input"
+                     type="radio"
+                     name="malade"
+                     id="malade"
+                     th:field="*{malade}"
+                     value="true">
+              <label class="form-check-label" for="malade">
+                🤒 Malade
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input"
+                     type="radio"
+                     name="malade"
+                     id="sain"
+                     th:field="*{malade}"
+                     value="false">
+              <label class="form-check-label" for="sain">
+                ✅ Sain
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Score avec slider -->
+        <div class="mb-4">
+          <label for="score" class="form-label">
+            <span class="label-icon">📊</span> Score de santé
+          </label>
+          <div class="score-display" id="scoreDisplay" th:text="${patient.score}">50</div>
+          <input type="range"
+                 class="form-range"
+                 id="score"
+                 th:field="*{score}"
+                 min="0"
+                 max="100"
+                 th:value="${patient.score}"
+                 oninput="document.getElementById('scoreDisplay').textContent = this.value">
+          <div class="d-flex justify-content-between text-muted small">
+            <span>0</span>
+            <span>50</span>
+            <span>100</span>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="btn-group-custom">
+          <button type="submit" class="btn-update">
+            💾 Mettre à jour
+          </button>
+          <a th:href="@{/index(page=${page}, keyword=${keyword})}" class="btn-cancel">
+            ❌ Annuler
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Générer des particules animées
+    const particlesContainer = document.getElementById('particles');
+
+    function createParticle() {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+
+      const size = Math.random() * 5 + 2;
+      particle.style.width = size + 'px';
+      particle.style.height = size + 'px';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.bottom = '-10px';
+      particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+      particle.style.animationDelay = Math.random() * 5 + 's';
+
+      particlesContainer.appendChild(particle);
+
+      setTimeout(() => {
+        particle.remove();
+      }, 20000);
+    }
+
+    // Créer des particules périodiquement
+    setInterval(createParticle, 300);
+
+    // Créer les premières particules
+    for (let i = 0; i < 20; i++) {
+      createParticle();
+    }
+
+    // Animation du formulaire
+    const inputs = document.querySelectorAll('.form-control, .form-select, .form-range');
+
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.style.transform = 'translateY(-2px)';
+      });
+
+      input.addEventListener('blur', function() {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+
+    // Validation en temps réel
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+      const submitBtn = this.querySelector('.btn-update');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ Mise à jour...';
+    });
+
+    // Initialiser le score display au chargement
+    window.addEventListener('DOMContentLoaded', function() {
+      const scoreInput = document.getElementById('score');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      if (scoreInput && scoreDisplay) {
+        scoreDisplay.textContent = scoreInput.value;
+      }
+    });
+  </script>
+</div>
+</body>
+</html>
